@@ -21,10 +21,9 @@ public class PermTest {
     private static void perm(int depth){
         if(R == depth){
             Count++;
-            System.out.println(Arrays.toString(nums));
-
             return;
         }
+        System.out.println(Arrays.toString(nums));
         for(int i = 0; i<N; i++){
             if(visited[i]) continue;
             visited[i] = true;
