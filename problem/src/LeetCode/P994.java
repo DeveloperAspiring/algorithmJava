@@ -82,10 +82,10 @@ public class P994 {
 
     public static void main(String[] args) {
 
-        // int[][] grid = {{1}};
+         int[][] grid = {{2}};
        //int[][] grid = {{2,1,1},{1,1,0},{0,1,1}};
         //int[][] grid = {{2,1,1},{0,1,1},{1,0,1}};
-        int[][] grid = {{2,1,0},{0,0,0},{0,1,1}};
+        //int[][] grid = {{2,1,0},{0,0,0},{0,1,1}};
 
        Solution s = new Solution();
        s.orangesRotting(grid);
