@@ -1,14 +1,16 @@
 package com.SWEA.EVCharger;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
 
 class UserSolution {
     class Doro{
-        int sCity,eCity,mDistance;
+        int id, sCity,eCity,mDistance;
 
-        public Doro(int sCity, int mDistance, int eCity) {
+        public Doro(int id,int sCity, int mDistance, int eCity) {
+            this.id = id;
             this.sCity = sCity;
             this.mDistance = mDistance;
             this.eCity = eCity;
@@ -23,13 +25,20 @@ class UserSolution {
     static int total = Integer.MAX_VALUE;
     static int N,K;
     static int[] mCost;
-    static Map<Integer,Doro> doroMap = new HashMap<>();
+    //스타트 위치를 키값
+    static Map<Integer, ArrayList<Doro>> doroMapS = new HashMap<>();
+    //id를 키값
+    static Map<Integer, Doro> doroMapId = new HashMap<>();
     public void init(int N, int mCost[], int K, int mId[], int sCity[], int eCity[], int mDistance[]) {
         UserSolution.N = N;
         UserSolution.mCost = mCost;
         UserSolution.K = K;
         for(int i = 0 ; i < K; i++){
-            doroMap.put(mId[i], new Doro(sCity[i],mDistance[i],eCity[i]));    
+            if(!doroMapS.containsKey(sCity[i])){
+                doroMapS.put(sCity[i], new ArrayList<Doro>());
+            }
+            doroMapS.get(sCity[i]).add(new Doro(mId[i],sCity[i],mDistance[i],eCity[i]));
+            doroMapId.put(mId[i], new Doro(mId[i],sCity[i],mDistance[i],eCity[i]));
         }
         
         return;
@@ -57,7 +66,10 @@ class UserSolution {
 //
 //    mDistance: 도로의 거리 ( 1 ≤ mDistance ≤ 2,000 )
     public void add(int mId, int sCity, int eCity, int mDistance) {
-        doroMap.put(mId, new Doro(sCity,mDistance,eCity));
+        doroMapId.put(mId, new Doro(mId,sCity,mDistance,eCity));
+        if(!doroMapS.containsKey(sCity))doroMapS.put(sCity, new ArrayList<Doro>());
+
+        doroMapS.get(sCity).add( new Doro(mId,sCity,mDistance,eCity));
         return;
     }
 
@@ -65,7 +77,17 @@ class UserSolution {
 //
 //    존재하지 않는 도로의 ID가 주어지는 경우는 없다.
     public void remove(int mId) {
-        doroMap.remove(mId);
+        Doro d = doroMapId.get(mId);
+        doroMapId.remove(mId);
+        ArrayList<Doro> doros = doroMapS.get(d.sCity);
+        for(int i = 0; i <doros.size();i++){
+            if(doros.get(i).id == mId){
+                doros.remove(i);
+            }
+        }
+        if(doros.size() == 0){
+            doroMapS.remove(d.sCity);
+        }
         return;
     }
 //sCity에서 eCity로 가는데 필요한 최소 충전 비용을 반환한다.
