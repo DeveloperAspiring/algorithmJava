@@ -8,6 +8,7 @@ import java.util.PriorityQueue;
 class UserSolution {
     class Doro{
         int id, sCity,eCity,mDistance;
+        int cost = Integer.MAX_VALUE;
 
         public Doro(int id,int sCity, int mDistance, int eCity) {
             this.id = id;
@@ -16,23 +17,40 @@ class UserSolution {
             this.eCity = eCity;
         }
     }
+    class Node implements Comparable<Node> {
+        int id;
+        int cost;
+        long sum;
 
-//    N개의 도시가 주어진다. 각 도시는 0부터 N-1까지 ID값을 가진다.
+        Node(int id, int cost, long sum) {
+            this.id = id;
+            this.cost = cost;
+            this.sum = sum;
+        }
+
+        @Override
+        public int compareTo(Node other) {
+            return Long.compare(this.sum, other.sum);
+        }
+    }
+
+    //    N개의 도시가 주어진다. 각 도시는 0부터 N-1까지 ID값을 가진다.
 //
 //    N개의 단위 거리당 충전 비용이 mCost 배열로 주어진다.
 //
 //    K개의 도로 정보가 주어진다. 각 도로의 ID, 출발 도시와 도착 도시, 그리고 거리가 주어진다.
-    static int total = Integer.MAX_VALUE;
     static int N,K;
     static int[] mCost;
     //스타트 위치를 키값
-    static Map<Integer, ArrayList<Doro>> doroMapS = new HashMap<>();
+     Map<Integer, ArrayList<Doro>> doroMapS = new HashMap<>();
     //id를 키값
-    static Map<Integer, Doro> doroMapId = new HashMap<>();
+     Map<Integer, Doro> doroMapId = new HashMap<>();
     public void init(int N, int mCost[], int K, int mId[], int sCity[], int eCity[], int mDistance[]) {
         UserSolution.N = N;
         UserSolution.mCost = mCost;
         UserSolution.K = K;
+        doroMapS = new HashMap<>();
+        doroMapId= new HashMap<>();
         for(int i = 0 ; i < K; i++){
             if(!doroMapS.containsKey(sCity[i])){
                 doroMapS.put(sCity[i], new ArrayList<Doro>());
@@ -85,7 +103,7 @@ class UserSolution {
                 doros.remove(i);
             }
         }
-        if(doros.size() == 0){
+        if(doros.isEmpty()){
             doroMapS.remove(d.sCity);
         }
         return;
@@ -93,34 +111,87 @@ class UserSolution {
 //sCity에서 eCity로 가는데 필요한 최소 충전 비용을 반환한다.
 //
 //sCity와 eCity가 서로 같은 경우는 없다.
-    public int cost(int sCity, int eCity) {
-        total = Integer.MAX_VALUE;
-        boolean[] checker = new boolean[N];
-        bfs1(eCity,sCity,0,0, checker);
-        System.out.println(total);
-        return total;
-    }
-    //end to start
-    public void bfs1(int end, int start, int sum,int sumDistance, boolean[] checker){
-        if(end == start){
-            total = Math.min(sum, total);
-            return;
-        }
-        if(total < sum)return;
-        for(Doro doro : doroMap.values()){
-            //end 도로 체크
-            if(end != doro.eCity)continue;
-            if(checker[end])continue;
+public int cost(int sCity, int eCity) {
 
-            // 가격 비교
-            checker[end] = true;
-            if(sum + doro.mDistance* mCost[doro.sCity] < mCost[doro.sCity] * (sumDistance + doro.mDistance)){
-                bfs1(doro.sCity, start, sum + doro.mDistance* mCost[doro.sCity], sumDistance +doro.mDistance,checker);
-                checker[end] = false;
-            }else{
-                bfs1(doro.sCity, start, mCost[doro.sCity] * (sumDistance + doro.mDistance), sumDistance +doro.mDistance,checker);
-                checker[end] = false;
+    PriorityQueue<Node> queue = new PriorityQueue<>();
+
+    ArrayList<ArrayList<Node>> states = new ArrayList<>();
+
+    for (int i = 0; i < N; i++) {
+        states.add(new ArrayList<>());
+    }
+
+    Node start = new Node(
+            sCity,
+            mCost[sCity],
+            0
+    );
+
+    queue.add(start);
+    states.get(sCity).add(start);
+
+    while (!queue.isEmpty()) {
+
+        Node n = queue.poll();
+
+        if (n.id == eCity) {
+            return (int)n.sum;
+        }
+
+        if (!doroMapS.containsKey(n.id)) {
+            continue;
+        }
+
+        for (Doro doro : doroMapS.get(n.id)) {
+
+            int nextCity = doro.eCity;
+
+            long nextSum =
+                    n.sum +
+                            (long)n.cost * doro.mDistance;
+
+            int nextCost =
+                    Math.min(
+                            n.cost,
+                            mCost[nextCity]
+                    );
+
+            // 1. 새 상태가 기존 상태에 지배되는지 확인
+            boolean dominated = false;
+
+            for (Node old : states.get(nextCity)) {
+
+                if (old.sum <= nextSum &&
+                        old.cost <= nextCost) {
+
+                    dominated = true;
+                    break;
+                }
             }
+
+            if (dominated) {
+                continue;
+            }
+
+            // 2. 새 상태가 기존 상태를 지배하면 삭제
+            states.get(nextCity).removeIf(old ->
+                    nextSum <= old.sum &&
+                            nextCost <= old.cost
+            );
+
+            // 3. 새로운 상태 등록
+            Node nextNode =
+                    new Node(
+                            nextCity,
+                            nextCost,
+                            nextSum
+                    );
+
+            states.get(nextCity).add(nextNode);
+            queue.add(nextNode);
         }
     }
+
+    return -1;
+}
 }
