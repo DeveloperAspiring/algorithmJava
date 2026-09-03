@@ -2,15 +2,21 @@ package jun;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Vector;
 
 public class P2247 {
     char[][] arr = {{'*', '*', '*'}, {'*', ' ', '*'}, {'*', '*', '*'}};
-
+    HashMap<Character, int[]> map = new HashMap<>();
+    static HashSet<Integer> set = new HashSet<>();
     public static void main(String[] args) throws IOException {
 
+        Integer[] arr = set.toArray(new Integer[0]);
 //        InputStream in = System.in;
 //        int t = in.read();
-        int t = 27;
+        int t = 729;
         char[][] cArr = make(t);
 
 
